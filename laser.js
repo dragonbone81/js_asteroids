@@ -1,5 +1,5 @@
 function Laser(ship_position, ship_heading) {
-    this.velocity = p5.Vector.fromAngle(ship_heading).mult(10);// + (ship_velocity);
+    this.velocity = p5.Vector.fromAngle(ship_heading).mult(6);// + (ship_velocity);
     this.position = createVector(ship_position.x, ship_position.y).add(this.velocity.copy().mult(5));
     this.delete = false;
 
@@ -34,19 +34,16 @@ function Laser(ship_position, ship_heading) {
         var self = this;
         var new_asteroids = [];
         asteroids.forEach(function (asteroid) {
-            var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
-            if (distance > asteroid.r * 3) { // no need to continue if it is nowhere near
-                return true;
-            }
             var collision = self.collision_calc(asteroid.vertices, self.position.x, self.position.y, asteroid.position);
             if (collision) {
                 new_asteroids = new_asteroids.concat(asteroid.break());
                 asteroid.delete = true;
+                if (!self.delete)
+                    add_score(1);
                 self.delete = true;
-                score += 1;
-                scoreElem.html("Score = " + score);
-                if (score % 5 === 0)
-                    add_asteroids(1);
+                if (score % 5 === 0 || asteroids.length < 5) {
+                    add_asteroids(floor(random(1, 3)));
+                }
                 return true
             }
         });

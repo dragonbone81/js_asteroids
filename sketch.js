@@ -1,10 +1,14 @@
 var ship;
+var health_bar;
 var asteroids = [];
 var explosion_particles = [];
+var power_ups = [];
 var scoreElem;
 var score = 0;
 var shooting_sound;
 var explosion_sound;
+var thrusting_sound;
+var high_scores_data = [];
 
 function setup() {
     createCanvas(600, 600);
@@ -12,10 +16,12 @@ function setup() {
 }
 
 function preload() {
-    shooting_sound = loadSound('gun.wav');
+    shooting_sound = loadSound('fire.wav');
     shooting_sound.setVolume(0.3);
     explosion_sound = loadSound('explosion.wav');
-    explosion_sound.setVolume(0.3);
+    explosion_sound.setVolume(0.4);
+    thrusting_sound = loadSound('thrust.wav');
+    thrusting_sound.setVolume(0.05);
 }
 
 function reset() {
@@ -24,15 +30,17 @@ function reset() {
         scoreElem.position(20, 20);
         scoreElem.id = 'score';
         scoreElem.style('color', 'white');
+        get_high_scores();
     } else {
         score = 0;
         scoreElem.html("Score = " + score);
     }
 
-
     asteroids = [];
     explosion_particles = [];
+    power_ups = [];
     ship = new Ship();
+    health_bar = new HealthBar();
     add_asteroids(5);
 }
 
@@ -43,9 +51,7 @@ function add_asteroids(count) {
 }
 
 function draw() {
-
     background(0);
-    ship.render();
     asteroids = asteroids.filter(function (asteroid) {
         return !(asteroid.delete);
     });
@@ -58,8 +64,16 @@ function draw() {
     explosion_particles.forEach(function (particle) {
         particle.render();
     });
+    power_ups = power_ups.filter(function (power_up) {
+        return !(power_up.delete);
+    });
+    power_ups.forEach(function (power_up) {
+        power_up.render();
+    });
+    ship.render();
     if (ship.crash && !ship.exploding) {
         ship.explode();
+        save_high_score(score);
         setTimeout(function () {
             reset();
         }, 1000);
@@ -71,6 +85,7 @@ function draw() {
         ship.crash = false;
         ship.exploding = true;
     }
+    health_bar.render();
 
 
 }
@@ -79,14 +94,14 @@ function keyReleased() {
     if (keyCode === RIGHT_ARROW) {
         ship.rotating_right = false;
     }
-    if (keyCode === LEFT_ARROW) {
-        ship.rotating_left = false;
-    }
     if (keyCode === UP_ARROW) {
         ship.thrusting = false;
     }
-    if (key === ' ') {
+    if (keyCode === 17) {
         ship.shooting = false;
+    }
+    if (keyCode === LEFT_ARROW) {
+        ship.rotating_left = false;
     }
     return false;
 }
@@ -95,17 +110,63 @@ function keyPressed() {
     if (keyCode === RIGHT_ARROW) {
         ship.rotating_right = true;
     }
-    if (keyCode === LEFT_ARROW) {
-        ship.rotating_left = true;
-    }
     if (keyCode === UP_ARROW) {
         ship.thrusting = true;
     }
-    if (key === ' ') {
+    if (keyCode === 17) {
+        //console.log(explosion_particles.length);
         ship.shooting = true;
     }
-    if (keyCode === 82) {
-        reset();
+    if (keyCode === LEFT_ARROW) {
+        ship.rotating_left = true;
     }
+    // if (key === ' ') {
+    //     console.log(ship.health);
+    //     ship.health -= 2;
+    // }
+    // if (keyCode === 82) {
+    //     reset();
+    // }
+    // if (keyCode === 84) {
+    //     save_high_score(2);
+    // }
+
     return false;
+}
+
+function get_high_scores() {
+    var high_scores = document.getElementById('high_scores_list');
+    axios.get('https://api.myjson.com/bins/1dnf82').then(function (response) {
+        high_scores_data = response.data.high_scores;
+        high_scores_data.sort(function (a, b) {
+            return (a.high_score > b.high_score) ? -1 : ((b.high_score > a.high_score) ? 1 : 0);
+        });
+        high_scores.textContent = "";
+        for (var i = 0; i < high_scores_data.length; i++) {
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(high_scores_data[i].username + " : " + high_scores_data[i].high_score));
+            high_scores.appendChild(li);
+        }
+    });
+}
+
+function save_high_score(score) {
+    if (score >= 5) {
+        high_scores_data.push({username: 'anonymous', high_score: score});
+        high_scores_data.sort(function (a, b) {
+            return (a.high_score > b.high_score) ? -1 : ((b.high_score > a.high_score) ? 1 : 0);
+        });
+        axios.put('https://api.myjson.com/bins/1dnf82', {high_scores: high_scores_data.slice(0, 15)}).then(function (response) {
+            if (response.status === 200 && response.statusText === "OK") {
+                setTimeout(function () {
+                    get_high_scores();
+                }, 300);
+            }
+        });
+    }
+}
+
+function add_score(score_amount) {
+    score += score_amount;
+    scoreElem.html("Score = " + score);
 }

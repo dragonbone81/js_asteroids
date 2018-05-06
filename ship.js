@@ -14,19 +14,29 @@ function Ship() {
     this.crash = false;
     this.exploding = false;
     this.stroke_alpha = 255;
+    this.health = 100;
+    this.sheild = 100;
     this.move = function () {
-        if (ship.rotating_right) ship.turn(1);
-        if (ship.rotating_left) ship.turn(-1);
         if (ship.thrusting) ship.thrust();
         if (ship.shooting) ship.shoot();
+        if (ship.rotating_right) ship.turn(1);
+        if (ship.rotating_left) ship.turn(-1);
         this.position.add(this.velocity);
         this.velocity.mult(0.99);
         this.edges();
     };
     this.thrust = function () {
+        thrusting_sound.play();
         var force = p5.Vector.fromAngle(this.heading);
         force.mult(this.thrust_amaount);
         this.velocity.add(force);
+
+        for (var i = 0; i < 1; i++) {
+            var x = this.position.copy();
+            x = x.sub(p5.Vector.fromAngle(this.heading).mult(15));
+            explosion_particles.push(new Particle(x, 2, 100, 50));
+        }
+
     };
     this.shoot = function () {
         if (this.shooting_time >= 15) {
@@ -48,9 +58,10 @@ function Ship() {
         }
     };
     this.draw_ship = function () {
+        push();
         translate(this.position);
         rotate(this.heading + PI / 2);
-        fill(1);
+        fill(1, this.stroke_alpha);
         stroke(255, this.stroke_alpha);
         beginShape();
         vertex(-this.r, this.r);
@@ -58,6 +69,7 @@ function Ship() {
         vertex(this.r, this.r);
         vertex(0, -this.r * 2);
         endShape(CLOSE);
+        pop();
     };
     this.hide = function () {
         this.stroke_alpha = 0;
@@ -95,8 +107,15 @@ function Ship() {
             if (asteroid.no_effect === 0) {
                 var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
                 if (distance < self.r + asteroid.r) {
-                    self.crash = true;
-                    console.log('you lost');
+                    if(self.sheild === 0) {
+                        if (self.health === 0) {
+                            self.crash = true;
+                        } else {
+                            self.health -= 1;
+                        }
+                    }else {
+                        self.sheild -= 1;
+                    }
                     return true;
                 }
             }
