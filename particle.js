@@ -1,7 +1,10 @@
-function Particle(position) {
+function Particle(position, variability) {
+    this.variability = 2;
+    if (variability)
+        this.variability = variability;
     this.position = position;
     this.velocity = p5.Vector.random2D();
-    this.velocity.mult(random(0.5, 2));
+    this.velocity.mult(random(0.5, this.variability));
     this.time = 0;
     this.delete = false;
     this.alpha = 255;

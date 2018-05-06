@@ -12,6 +12,8 @@ function Ship() {
     this.shooting = false;
     this.shooting_time = 10;
     this.crash = false;
+    this.exploding = false;
+    this.stroke_alpha = 255;
     this.move = function () {
         if (ship.rotating_right) ship.turn(1);
         if (ship.rotating_left) ship.turn(-1);
@@ -30,6 +32,7 @@ function Ship() {
         if (this.shooting_time >= 15) {
             this.lasers.push(new Laser(this.position, this.heading, this.velocity));
             this.shooting_time = 0;
+            shooting_sound.play();
         }
     };
     this.edges = function () {
@@ -48,13 +51,16 @@ function Ship() {
         translate(this.position);
         rotate(this.heading + PI / 2);
         fill(1);
-        stroke(255);
+        stroke(255, this.stroke_alpha);
         beginShape();
         vertex(-this.r, this.r);
-        vertex(0, this.r - this.r*0.5);
+        vertex(0, this.r - this.r * 0.5);
         vertex(this.r, this.r);
         vertex(0, -this.r * 2);
         endShape(CLOSE);
+    };
+    this.hide = function () {
+        this.stroke_alpha = 0;
     };
     this.render = function () {
         this.render_lasers();
@@ -63,7 +69,8 @@ function Ship() {
         this.move();
         pop();
         this.shooting_time += 1;
-        this.crashed();
+        if (!this.crash)
+            this.check_crash();
     };
     this.render_lasers = function () {
         this.lasers = this.lasers.filter(function (laser) {
@@ -76,15 +83,24 @@ function Ship() {
     this.turn = function (direction) {
         this.heading += this.rotation_angle * direction;
     };
-    this.crashed = function () {
+    this.explode = function () {
+        explosion_sound.play();
+        for (var i = 0; i < 150; i++) {
+            explosion_particles.push(new Particle(this.position.copy(), 6));
+        }
+    };
+    this.check_crash = function () {
         var self = this;
         asteroids.forEach(function (asteroid) {
-            var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
-            if (distance < self.r + asteroid.r) {
-                self.crash = true;
-                console.log('you lost');
-                return true;
+            if (asteroid.no_effect === 0) {
+                var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
+                if (distance < self.r + asteroid.r) {
+                    self.crash = true;
+                    console.log('you lost');
+                    return true;
+                }
             }
         })
+
     }
 }

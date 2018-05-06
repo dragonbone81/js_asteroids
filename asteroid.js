@@ -1,16 +1,20 @@
-function Asteroid(position, radius) {
+function Asteroid(position, radius, no_effect) {
     this.min_size = 5;
-    if (position) {
-        this.position = position.copy()
+    this.no_effect = no_effect;
+    if (no_effect) {
+        this.no_effect = no_effect;
+    } else {
+        this.no_effect = 0;
     }
-    else {
+    if (position) {
+        this.position = position.copy();
+    } else {
         this.position = createVector(random(width), random(height));
     }
     this.velocity = p5.Vector.random2D();
     if (radius) {
         this.r = random(this.min_size, radius);
-    }
-    else {
+    } else {
         this.r = random(this.min_size, 40);
     }
     this.total_vert = random(this.min_size, 16);
@@ -39,8 +43,11 @@ function Asteroid(position, radius) {
         this.move();
         this.edges();
         pop();
+        if (this.no_effect > 0)
+            this.no_effect -= 1;
     };
     this.explode = function () {
+        explosion_sound.play();
         for (var i = 0; i < 25; i++) {
             explosion_particles.push(new Particle(this.position.copy()));
         }

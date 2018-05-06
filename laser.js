@@ -43,6 +43,10 @@ function Laser(ship_position, ship_heading) {
                 new_asteroids = new_asteroids.concat(asteroid.break());
                 asteroid.delete = true;
                 self.delete = true;
+                score += 1;
+                scoreElem.html("Score = " + score);
+                if (score % 5 === 0)
+                    add_asteroids(1);
                 return true
             }
         });
