@@ -14,10 +14,14 @@ function Asteroid(position, radius) {
         this.r = random(this.min_size, 40);
     }
     this.total_vert = random(this.min_size, 16);
-    this.offsets = [];
     this.delete = false;
+    this.vertices = [];
     for (var i = 0; i < this.total_vert; i++) {
-        this.offsets[i] = random(-this.r / 2, this.r / 2);
+        var angle = map(i, 0, this.total_vert, 0, TWO_PI);
+        var offset = random(-this.r / 2, this.r / 2);
+        var x = (this.r + offset) * cos(angle);
+        var y = (this.r + offset) * sin(angle);
+        this.vertices.push(new p5.Vector(x, y));
     }
     this.move = function () {
         this.position.add(this.velocity);
@@ -29,17 +33,18 @@ function Asteroid(position, radius) {
         translate(this.position.x, this.position.y);
         beginShape();
         for (var i = 0; i < this.total_vert; i++) {
-            var angle = map(i, 0, this.total_vert, 0, TWO_PI);
-            var x = (this.r + this.offsets[i]) * cos(angle);
-            var y = (this.r + this.offsets[i]) * sin(angle);
-            vertex(x, y);
+            vertex(this.vertices[i].x, this.vertices[i].y);
         }
         endShape(CLOSE);
         this.move();
         this.edges();
         pop();
     };
-
+    this.explode = function () {
+        for (var i = 0; i < 25; i++) {
+            explosion_particles.push(new Particle(this.position.copy()));
+        }
+    };
     this.break = function () {
         var newAsteroids = [];
         if (this.r <= this.min_size * 3) {
@@ -49,6 +54,7 @@ function Asteroid(position, radius) {
             newAsteroids.push(new Asteroid(this.position, max(this.r / 1.1, this.min_size)));
             newAsteroids.push(new Asteroid(this.position, max(this.r / 1.1, this.min_size)));
         }
+        this.explode();
         return newAsteroids;
     };
 

@@ -1,6 +1,6 @@
 function Laser(ship_position, ship_heading) {
-    this.position = createVector(ship_position.x, ship_position.y);
-    this.velocity = p5.Vector.fromAngle(ship_heading).mult(10);
+    this.velocity = p5.Vector.fromAngle(ship_heading).mult(10);// + (ship_velocity);
+    this.position = createVector(ship_position.x, ship_position.y).add(this.velocity.copy().mult(5));
     this.delete = false;
 
     this.update = function () {
@@ -9,7 +9,7 @@ function Laser(ship_position, ship_heading) {
 
     this.render = function () {
         this.edges();
-        this.collision();
+        this.asteroid_collision();
         push();
         stroke(255);
         strokeWeight(4);
@@ -18,29 +18,52 @@ function Laser(ship_position, ship_heading) {
         pop();
     };
     this.edges = function () {
-        if (this.position.x > width) {
+        if (this.position.x > width * 1.3) {
             this.delete = true;
-        } else if (this.position.x < 0) {
+        } else if (this.position.x < 0 - width * 1.3) {
             this.delete = true;
         }
-        if (this.position.y > height) {
+        if (this.position.y > height * 1.3) {
             this.delete = true;
-        } else if (this.position.y < 0) {
+        } else if (this.position.y < 0 - height * 1.3) {
             this.delete = true;
         }
     };
-    this.collision = function () {
+    this.asteroid_collision = function () {
+
         var self = this;
         var new_asteroids = [];
         asteroids.forEach(function (asteroid) {
             var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
-            if (distance < asteroid.r) {
+            if (distance > asteroid.r * 3) { // no need to continue if it is nowhere near
+                return true;
+            }
+            var collision = self.collision_calc(asteroid.vertices, self.position.x, self.position.y, asteroid.position);
+            if (collision) {
                 new_asteroids = new_asteroids.concat(asteroid.break());
                 asteroid.delete = true;
                 self.delete = true;
-                return true;
+                return true
             }
         });
         asteroids = asteroids.concat(new_asteroids);
+    };
+    this.collision_calc = function (vertices, px, py, position) {
+        //https://www.jeffreythompson.org/collision-detection/poly-point
+        var collision = false;
+        var next = 0;
+        for (var current = 0; current < vertices.length; current++) {
+            next = current + 1;
+            if (next === vertices.length) next = 0;
+            var vc = vertices[current];    // c for "current"
+            var vn = vertices[next];       // n for "next"
+            if ((((vc.y + position.y) > py && (vn.y + position.y) < py) || ((vc.y + position.y) <
+                    py && (vn.y + position.y) > py)) &&
+                (px < ((vn.x + position.x) - (vc.x + position.x)) * (py - (vc.y + position.y)) /
+                    ((vn.y + position.y) - (vc.y + position.y)) + (vc.x + position.x))) {
+                collision = !collision;
+            }
+        }
+        return collision;
     }
 }

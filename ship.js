@@ -28,7 +28,7 @@ function Ship() {
     };
     this.shoot = function () {
         if (this.shooting_time >= 15) {
-            this.lasers.push(new Laser(this.position, this.heading));
+            this.lasers.push(new Laser(this.position, this.heading, this.velocity));
             this.shooting_time = 0;
         }
     };
@@ -47,16 +47,21 @@ function Ship() {
     this.draw_ship = function () {
         translate(this.position);
         rotate(this.heading + PI / 2);
-        fill(0);
+        fill(1);
         stroke(255);
-        triangle(-this.r, this.r, this.r, this.r, 0, -this.r * 2);
+        beginShape();
+        vertex(-this.r, this.r);
+        vertex(0, this.r - this.r*0.5);
+        vertex(this.r, this.r);
+        vertex(0, -this.r * 2);
+        endShape(CLOSE);
     };
     this.render = function () {
+        this.render_lasers();
         push();
         this.draw_ship();
         this.move();
         pop();
-        this.render_lasers();
         this.shooting_time += 1;
         this.crashed();
     };

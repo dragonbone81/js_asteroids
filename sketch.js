@@ -1,5 +1,6 @@
 var ship;
 var asteroids = [];
+var explosion_particles = [];
 
 function setup() {
     createCanvas(600, 600);
@@ -18,6 +19,14 @@ function draw() {
     asteroids.forEach(function (asteroid) {
         asteroid.render();
     });
+    explosion_particles = explosion_particles.filter(function (particle) {
+        return !(particle.delete);
+    });
+    explosion_particles.forEach(function (particle) {
+        particle.render();
+    });
+
+
 }
 
 function keyReleased() {
