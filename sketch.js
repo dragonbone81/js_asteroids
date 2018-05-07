@@ -4,21 +4,22 @@ var asteroids = [];
 var explosion_particles = [];
 var power_ups = [];
 var scoreElem;
+var newGameElem;
 var score = 0;
 var shooting_sound;
 var explosion_sound;
 var thrusting_sound;
 var high_scores_data = [];
 var aliens = [];
+var new_game = true;
 
 function setup() {
     createCanvas(600, 600);
-    shooting_sound = loadSound('fire.wav');
-    shooting_sound.setVolume(0.3);
-    explosion_sound = loadSound('explosion.wav');
-    explosion_sound.setVolume(0.4);
-    thrusting_sound = loadSound('thrust.wav');
-    thrusting_sound.setVolume(0.05);
+    newGameElem = createDiv('Press Space to start');
+    newGameElem.position(width / 2 - 150, height / 2 + 30);
+    newGameElem.id = 'new_game';
+    newGameElem.style('color', 'white');
+    newGameElem.style('font-size', '40px');
     reset();
 }
 
@@ -117,17 +118,31 @@ function keyReleased() {
 }
 
 function keyPressed() {
-    if (keyCode === RIGHT_ARROW) {
+    if (keyCode === RIGHT_ARROW && !new_game) {
         ship.rotating_right = true;
     }
-    if (keyCode === UP_ARROW) {
+    if (keyCode === UP_ARROW && !new_game) {
         ship.thrusting = true;
     }
-    if (keyCode === 17) {
+    if (keyCode === 17 && !new_game) {
         ship.shooting = true;
     }
-    if (keyCode === LEFT_ARROW) {
+    if (keyCode === 32 && new_game) {
+        new_game = false;
+        newGameElem.remove();
+        shooting_sound = loadSound('fire.wav');
+        shooting_sound.setVolume(0.3);
+        explosion_sound = loadSound('explosion.wav');
+        explosion_sound.setVolume(0.4);
+        thrusting_sound = loadSound('thrust.wav');
+        thrusting_sound.setVolume(0.05);
+        reset();
+    }
+    if (keyCode === LEFT_ARROW && !new_game) {
         ship.rotating_left = true;
+    }
+    if (keyCode === RIGHT_ARROW && !new_game) {
+        ship.rotating_right = true;
     }
 
     return false;

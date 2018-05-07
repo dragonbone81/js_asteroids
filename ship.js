@@ -116,20 +116,22 @@ function Ship() {
 
     };
     this.hit = function (hit_amount) {
-        if (this.sheild <= 0) {
-            if (this.health === 0) {
-                this.crash = true;
+        if (!new_game) {
+            if (this.sheild <= 0) {
+                if (this.health === 0) {
+                    this.crash = true;
+                } else {
+                    this.health -= hit_amount;
+                }
             } else {
-                this.health -= hit_amount;
+                this.sheild -= hit_amount;
             }
-        } else {
-            this.sheild -= hit_amount;
-        }
-        if (this.sheild < 0) {
-            this.sheild = 0;
-        }
-        if (this.health < 0) {
-            this.health = 0;
+            if (this.sheild < 0) {
+                this.sheild = 0;
+            }
+            if (this.health < 0) {
+                this.health = 0;
+            }
         }
     }
 }
