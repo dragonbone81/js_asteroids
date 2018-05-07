@@ -14,6 +14,7 @@ function PowerUp(type, position) {
     this.time = 0;
     this.delete = false;
     this.max_time = 500;
+    this.min_distance = 500;
     this.render = function () {
         push();
         stroke(this.color);
@@ -38,19 +39,24 @@ function PowerUp(type, position) {
 
     this.collision_calc = function () {
         var distance = dist(this.position.x, this.position.y, ship.position.x, ship.position.y);
-        if (distance < ship.r) {
+        if (((ship.r * 50) - (distance)) < this.min_distance)
+            this.min_distance = ((ship.r * 50) - (distance));
+        if (distance < ship.r * 2) {
             if (this.type === 'shield') {
                 if (ship.sheild < 100) {
-                    ship.sheild += 2;
+                    ship.sheild += 1;
                 }
             } else if (this.type === 'score') {
                 add_score(5);
             }
             this.delete = true;
-        } else if (distance < ship.r * 5) {
+        } else if (distance < ship.r * 10) {
             var force = this.position.copy();
             norm(force.sub(ship.position));
+            // var additive = map(lerp((ship.r * 50) - (distance), (ship.r * 50), 0.01), this.min_distance, (ship.r * 50), 0.00005, 0.0009);
             this.velocity.add(force.mult(-0.002));
         }
     }
 }
+
+PowerUp.all_power_ups = ['shield', 'shield', 'shield', 'shield', 'score'];

@@ -9,7 +9,7 @@ var shooting_sound;
 var explosion_sound;
 var thrusting_sound;
 var high_scores_data = [];
-
+var aliens = [];
 function setup() {
     createCanvas(600, 600);
     reset();
@@ -37,6 +37,7 @@ function reset() {
     }
 
     asteroids = [];
+    aliens = [];
     explosion_particles = [];
     power_ups = [];
     ship = new Ship();
@@ -45,8 +46,10 @@ function reset() {
 }
 
 function add_asteroids(count) {
-    for (var i = 0; i < count; i++) {
-        asteroids.push(new Asteroid(null, null, 150));
+    if (asteroids.length < 20) {
+        for (var i = 0; i < count; i++) {
+            asteroids.push(new Asteroid(null, null, 150));
+        }
     }
 }
 
@@ -61,6 +64,7 @@ function draw() {
     explosion_particles = explosion_particles.filter(function (particle) {
         return !(particle.delete);
     });
+    explosion_particles = explosion_particles.splice(explosion_particles.length - min(explosion_particles.length, 100), explosion_particles.length);
     explosion_particles.forEach(function (particle) {
         particle.render();
     });
@@ -69,6 +73,12 @@ function draw() {
     });
     power_ups.forEach(function (power_up) {
         power_up.render();
+    });
+    aliens = aliens.filter(function (alien) {
+        return !(alien.delete);
+    });
+    aliens.forEach(function (alien) {
+        alien.render();
     });
     ship.render();
     if (ship.crash && !ship.exploding) {
@@ -86,7 +96,8 @@ function draw() {
         ship.exploding = true;
     }
     health_bar.render();
-
+    if (score >= 100 && !Alien.started)
+        add_aliens();
 
 }
 
@@ -114,22 +125,11 @@ function keyPressed() {
         ship.thrusting = true;
     }
     if (keyCode === 17) {
-        //console.log(explosion_particles.length);
         ship.shooting = true;
     }
     if (keyCode === LEFT_ARROW) {
         ship.rotating_left = true;
     }
-    // if (key === ' ') {
-    //     console.log(ship.health);
-    //     ship.health -= 2;
-    // }
-    // if (keyCode === 82) {
-    //     reset();
-    // }
-    // if (keyCode === 84) {
-    //     save_high_score(2);
-    // }
 
     return false;
 }
@@ -167,6 +167,14 @@ function save_high_score(score) {
 }
 
 function add_score(score_amount) {
+    ship.power += score_amount / 100;
     score += score_amount;
     scoreElem.html("Score = " + score);
+}
+
+function add_aliens() {
+    Alien.started = true;
+    setInterval(function () {
+        aliens.push(new Alien())
+    }, 10000);
 }

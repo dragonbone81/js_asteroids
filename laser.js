@@ -1,15 +1,22 @@
-function Laser(ship_position, ship_heading) {
+function Laser(ship_position, ship_heading, bad) {
     this.velocity = p5.Vector.fromAngle(ship_heading).mult(6);// + (ship_velocity);
     this.position = createVector(ship_position.x, ship_position.y).add(this.velocity.copy().mult(5));
     this.delete = false;
-
+    this.bad = false;
+    if (bad)
+        this.bad = bad;
     this.update = function () {
         this.position.add(this.velocity);
     };
 
     this.render = function () {
         this.edges();
-        this.asteroid_collision();
+        if (!this.bad) {
+            this.alien_collision();
+            this.asteroid_collision();
+        }
+        if (this.bad && !this.delete)
+            this.ship_collision();
         push();
         stroke(255);
         strokeWeight(4);
@@ -29,8 +36,34 @@ function Laser(ship_position, ship_heading) {
             this.delete = true;
         }
     };
+    this.ship_collision = function () {
+        var distance = dist(this.position.x, this.position.y, ship.position.x, ship.position.y);
+        if (distance < ship.r) {
+            ship.hit(5);
+            this.delete = true;
+        }
+    };
+    this.alien_collision = function () {
+        var self = this;
+        aliens.forEach(function (alien) {
+            var distance = dist(self.position.x, self.position.y, alien.position.x, alien.position.y);
+            if (distance < alien.r - alien.r / 3) {
+                add_score(10);
+                alien.health -= 2 * ship.power;
+                if (alien.health <= 0) {
+                    alien.delete = true;
+                    alien.explode();
+                }
+                else {
+                    for (var i = 0; i < 5; i++) {
+                        explosion_particles.push(new Particle(alien.position.copy()));
+                    }
+                }
+                self.delete = true;
+            }
+        });
+    };
     this.asteroid_collision = function () {
-
         var self = this;
         var new_asteroids = [];
         asteroids.forEach(function (asteroid) {

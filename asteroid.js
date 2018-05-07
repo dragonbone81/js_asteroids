@@ -1,5 +1,4 @@
 function Asteroid(position, radius, no_effect) {
-    this.all_power_ups = ['shield', 'shield', 'shield', 'shield', 'score'];
     this.min_size = 5;
     this.no_effect = no_effect;
     if (no_effect) {
@@ -52,9 +51,9 @@ function Asteroid(position, radius, no_effect) {
         for (var i = 0; i < 25; i++) {
             explosion_particles.push(new Particle(this.position.copy()));
         }
-        var power_ups_max = map(this.r, 0, 40, 0, 5);
+        var power_ups_max = map(this.r, 10, 40, 0, 3);
         for (var j = 0; j < power_ups_max; j++) {
-            power_ups.push(new PowerUp(random(this.all_power_ups), this.position.copy()));
+            power_ups.push(new PowerUp(random(PowerUp.all_power_ups), this.position.copy()));
         }
     };
     this.break = function () {

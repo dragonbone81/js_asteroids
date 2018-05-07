@@ -1,7 +1,7 @@
 function Ship() {
     this.position = createVector(width / 2, height / 2);
     this.lasers = [];
-    this.r = 20;
+    this.r = 10;
     this.heading = 0;
     this.rotation_angle = 0.05;
     this.thrust_amaount = 0.1;
@@ -16,6 +16,7 @@ function Ship() {
     this.stroke_alpha = 255;
     this.health = 100;
     this.sheild = 100;
+    this.power = 1;
     this.move = function () {
         if (ship.thrusting) ship.thrust();
         if (ship.shooting) ship.shoot();
@@ -40,7 +41,7 @@ function Ship() {
     };
     this.shoot = function () {
         if (this.shooting_time >= 15) {
-            this.lasers.push(new Laser(this.position, this.heading, this.velocity));
+            this.lasers.push(new Laser(this.position, this.heading));
             this.shooting_time = 0;
             shooting_sound.play();
         }
@@ -107,19 +108,28 @@ function Ship() {
             if (asteroid.no_effect === 0) {
                 var distance = dist(self.position.x, self.position.y, asteroid.position.x, asteroid.position.y);
                 if (distance < self.r + asteroid.r) {
-                    if(self.sheild === 0) {
-                        if (self.health === 0) {
-                            self.crash = true;
-                        } else {
-                            self.health -= 1;
-                        }
-                    }else {
-                        self.sheild -= 1;
-                    }
+                    self.hit(1);
                     return true;
                 }
             }
         })
 
+    };
+    this.hit = function (hit_amount) {
+        if (this.sheild <= 0) {
+            if (this.health === 0) {
+                this.crash = true;
+            } else {
+                this.health -= hit_amount;
+            }
+        } else {
+            this.sheild -= hit_amount;
+        }
+        if (this.sheild < 0) {
+            this.sheild = 0;
+        }
+        if (this.health < 0) {
+            this.health = 0;
+        }
     }
 }
