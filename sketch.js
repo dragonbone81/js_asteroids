@@ -10,18 +10,16 @@ var explosion_sound;
 var thrusting_sound;
 var high_scores_data = [];
 var aliens = [];
+
 function setup() {
     createCanvas(600, 600);
-    reset();
-}
-
-function preload() {
     shooting_sound = loadSound('fire.wav');
     shooting_sound.setVolume(0.3);
     explosion_sound = loadSound('explosion.wav');
     explosion_sound.setVolume(0.4);
     thrusting_sound = loadSound('thrust.wav');
     thrusting_sound.setVolume(0.05);
+    reset();
 }
 
 function reset() {
@@ -37,6 +35,7 @@ function reset() {
     }
 
     asteroids = [];
+    Alien.started = false;
     aliens = [];
     explosion_particles = [];
     power_ups = [];
@@ -46,7 +45,7 @@ function reset() {
 }
 
 function add_asteroids(count) {
-    if (asteroids.length < 20) {
+    if (asteroids.length < 10) {
         for (var i = 0; i < count; i++) {
             asteroids.push(new Asteroid(null, null, 150));
         }
