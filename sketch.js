@@ -12,6 +12,7 @@ var thrusting_sound;
 var high_scores_data = [];
 var aliens = [];
 var new_game = true;
+var interval;
 
 function setup() {
     createCanvas(600, 600);
@@ -36,6 +37,7 @@ function reset() {
     }
 
     asteroids = [];
+    clearInterval(interval);
     Alien.started = false;
     aliens = [];
     explosion_particles = [];
@@ -188,7 +190,7 @@ function add_score(score_amount) {
 
 function add_aliens() {
     Alien.started = true;
-    setInterval(function () {
+    interval = setInterval(function () {
         aliens.push(new Alien())
     }, 10000);
 }
